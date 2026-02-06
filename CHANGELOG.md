@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026.02.7] - 2026-02-07
+
+- `README.md` переведён в единый визуальный стандарт NeuronSwarm:
+  - badges, быстрые кнопки-навигации и emoji-структура секций;
+  - выровнены блоки архитектуры, quick start, env и MCP tools.
+- Добавлен раздел `Public Git Standards`:
+  - формат версий `YYYY.MM.x`;
+  - обязательная фиксация изменений в `CHANGELOG.md`;
+  - запрет коммита секретов, smoke-check перед релизом.
+- Обновлён `VERSION` до `2026.02.7`.
+
 ## [2026.02.6] - 2026-02-06
 
 - Compose and naming standardized:
