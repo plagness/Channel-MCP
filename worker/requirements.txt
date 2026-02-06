@@ -1,0 +1,8 @@
+aiohttp==3.10.5
+asyncpg==0.29.0
+python-dotenv==1.0.1
+beautifulsoup4==4.12.3
+python-telegram-bot==21.7
+telegram-api-client @ git+https://github.com/plagness/Telegram-MCP.git@0f1fdadf06277ae67e755ef912abd58a51d91174#subdirectory=sdk
+pymorphy3==2.0.3
+pymorphy3-dicts-ru==2.4.417150.4580142

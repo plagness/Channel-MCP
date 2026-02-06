@@ -1,0 +1,40 @@
+services:
+  chdb:
+    image: pgvector/pgvector:pg16
+    container_name: chdb
+    labels:
+      - "ns.module=channel"
+      - "ns.component=db"
+      - "ns.db_owner=channel"
+    environment:
+      POSTGRES_USER: channel
+      POSTGRES_PASSWORD: ${CHANNEL_DB_PASSWORD:-channel_secret}
+      POSTGRES_DB: channel_mcp
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:${PORT_DB_CHANNEL:-${CHANNEL_DB_PORT_PUBLIC:-5434}}:5432"
+    restart: unless-stopped
+
+  chmcp:
+    build: .
+    container_name: chmcp
+    labels:
+      - "ns.module=channel"
+      - "ns.component=mcp"
+    env_file: .env
+    environment:
+      CHANNEL_DB_HOST: chdb
+      TELEGRAM_USE_MCP: ${TELEGRAM_USE_MCP:-0}
+      TELEGRAM_MCP_BASE_URL: ${TELEGRAM_MCP_BASE_URL:-http://tgapi:8000}
+      TELEGRAM_MCP_BOT_ID: ${TELEGRAM_MCP_BOT_ID:-}
+      TELEGRAM_MCP_CHAT_ID: ${TELEGRAM_MCP_CHAT_ID:-}
+      TELEGRAM_MCP_FALLBACK_DIRECT: ${TELEGRAM_MCP_FALLBACK_DIRECT:-1}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      - chdb
+    ports:
+      - "127.0.0.1:${PORT_MCP_CHANNEL:-${CHANNEL_MCP_PORT:-3334}}:3333"
