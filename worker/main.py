@@ -10,8 +10,8 @@ import aiohttp
 from .config import load_config
 from .db import Db
 from .ingest import fetch_channel_page, parse_channel_html, backfill_channel
+from .llm_backend import generate_tags, embed_text
 from .logger import setup_logging, get_logger
-from .ollama_client import generate_tags, embed_text
 from .tagging import (
     build_alias_map,
     normalize_tags,
@@ -316,6 +316,11 @@ async def tagging_loop(db: Db, cfg, log, tag_rate: RateTracker, tps_tracker: deq
                             max_count=cfg.tag_max_count,
                             temperature=cfg.tag_temperature,
                             candidates=candidates,
+                            llm_backend=cfg.llm_backend,
+                            llm_mcp_base_url=cfg.llm_mcp_base_url,
+                            llm_mcp_provider=cfg.llm_mcp_provider,
+                            llm_backend_fallback_ollama=cfg.llm_backend_fallback_ollama,
+                            llm_backend_timeout_sec=cfg.llm_backend_timeout_sec,
                         )
                         elapsed = time.perf_counter() - started
                         tags = normalize_tags(raw_tags, alias_map)
@@ -391,6 +396,11 @@ async def embedding_loop(db: Db, cfg, log, embed_rate: RateTracker, progress: Pr
                             base_url=cfg.ollama_base_url,
                             model=cfg.embed_model,
                             text=embed_text_input,
+                            llm_backend=cfg.llm_backend,
+                            llm_mcp_base_url=cfg.llm_mcp_base_url,
+                            llm_mcp_provider=cfg.llm_mcp_provider,
+                            llm_backend_fallback_ollama=cfg.llm_backend_fallback_ollama,
+                            llm_backend_timeout_sec=cfg.llm_backend_timeout_sec,
                         )
                         elapsed = time.perf_counter() - started
                         if embedding:
@@ -574,11 +584,19 @@ async def main():
         GatewayConfig(
             use_mcp=cfg.telegram_use_mcp,
             mcp_base_url=cfg.telegram_mcp_base_url,
+            mcp_base_explicit=cfg.telegram_mcp_base_explicit,
             mcp_bot_id=cfg.telegram_mcp_bot_id,
             fallback_direct=cfg.telegram_mcp_fallback_direct,
             direct_bot_token=cfg.telegram_bot_token,
         ),
         log,
+    )
+    log.info(
+        "llm.backend.config backend=%s llm_mcp_base=%s provider=%s fallback_ollama=%s",
+        cfg.llm_backend,
+        cfg.llm_mcp_base_url,
+        cfg.llm_mcp_provider,
+        cfg.llm_backend_fallback_ollama,
     )
     notifier: TelegramProgressNotifier | None = None
     tg_app = None

@@ -83,6 +83,12 @@ class Config:
     embed_batch_size: int
     embed_max_chars: int
 
+    llm_backend: str
+    llm_mcp_base_url: str
+    llm_mcp_provider: str
+    llm_backend_fallback_ollama: bool
+    llm_backend_timeout_sec: int
+
     tag_candidates: bool
     status_interval: int
 
@@ -93,6 +99,7 @@ class Config:
     telegram_commands: bool
     telegram_use_mcp: bool
     telegram_mcp_base_url: str
+    telegram_mcp_base_explicit: bool
     telegram_mcp_bot_id: int | None
     telegram_mcp_chat_id: int | None
     telegram_mcp_fallback_direct: bool
@@ -137,7 +144,13 @@ def _parse_channels() -> list[ChannelCfg]:
 def load_config() -> Config:
     bot_token = os.getenv("BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_use_mcp = _bool("TELEGRAM_USE_MCP", False)
-    telegram_mcp_base_url = os.getenv("TELEGRAM_MCP_BASE_URL", "http://telegram-api:8000")
+    telegram_mcp_base_raw = os.getenv("TELEGRAM_MCP_BASE_URL")
+    telegram_mcp_base_url = (
+        telegram_mcp_base_raw.strip()
+        if telegram_mcp_base_raw and telegram_mcp_base_raw.strip()
+        else "http://tgapi:8000"
+    )
+    telegram_mcp_base_explicit = bool(telegram_mcp_base_raw and telegram_mcp_base_raw.strip())
     telegram_mcp_bot_id = _int_or_none(os.getenv("TELEGRAM_MCP_BOT_ID"))
     telegram_mcp_chat_id = _int_or_none(os.getenv("TELEGRAM_MCP_CHAT_ID"))
     telegram_mcp_fallback_direct = _bool("TELEGRAM_MCP_FALLBACK_DIRECT", True)
@@ -181,6 +194,11 @@ def load_config() -> Config:
         embed_model=os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"),
         embed_batch_size=_int("EMBEDDING_BATCH_SIZE", 16),
         embed_max_chars=_int("EMBED_MAX_CHARS", 4000),
+        llm_backend=os.getenv("LLM_BACKEND", "llm_mcp").strip().lower() or "llm_mcp",
+        llm_mcp_base_url=os.getenv("LLM_MCP_BASE_URL", "http://llmcore:8080"),
+        llm_mcp_provider=os.getenv("LLM_MCP_PROVIDER", "auto").strip().lower() or "auto",
+        llm_backend_fallback_ollama=_bool("LLM_BACKEND_FALLBACK_OLLAMA", True),
+        llm_backend_timeout_sec=_int("LLM_BACKEND_TIMEOUT_SEC", 30),
         tag_candidates=os.getenv("TAG_USE_CANDIDATES", "1").strip().lower() in {"1", "true", "yes", "y"},
         status_interval=_int("STATUS_INTERVAL", 60),
         telegram_bot_token=bot_token,
@@ -190,6 +208,7 @@ def load_config() -> Config:
         telegram_commands=telegram_commands,
         telegram_use_mcp=telegram_use_mcp,
         telegram_mcp_base_url=telegram_mcp_base_url,
+        telegram_mcp_base_explicit=telegram_mcp_base_explicit,
         telegram_mcp_bot_id=telegram_mcp_bot_id,
         telegram_mcp_chat_id=telegram_mcp_chat_id,
         telegram_mcp_fallback_direct=telegram_mcp_fallback_direct,

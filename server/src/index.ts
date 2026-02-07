@@ -13,7 +13,7 @@ import {
 
 import { config } from "./config.js";
 import { pool } from "./db.js";
-import { embedText } from "./ollama.js";
+import { embedText } from "./llm_backend.js";
 import { logger } from "./logger.js";
 
 const app = express();
@@ -73,7 +73,7 @@ const authMiddleware = (req: any, res: any, next: any) => {
 app.get("/health", (_req: Request, res: Response) => {
   res.json({
     status: "ok",
-    version: "26.02.4",
+    version: "2026.02.8",
     time: new Date().toISOString(),
   });
 });
@@ -243,7 +243,7 @@ addTool({
 
 addTool({
   name: "messages.search",
-  description: "Semantic search over messages (pgvector + Ollama embeddings)",
+  description: "Semantic search over messages (pgvector + LLM backend embeddings)",
   parameters: z.object({
     query: z.string(),
     channel: z.string().optional(),

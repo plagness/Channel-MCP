@@ -1,6 +1,6 @@
 {
   "name": "channel-mcp-server",
-  "version": "26.02.4",
+  "version": "2026.02.8",
   "private": true,
   "type": "module",
   "scripts": {

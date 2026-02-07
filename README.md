@@ -1,12 +1,12 @@
 # Channel-MCP
 
-[![Version](https://img.shields.io/badge/version-2026.02.7-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-2026.02.8-blue.svg)](VERSION)
 [![Runtime](https://img.shields.io/badge/runtime-node%20%2B%20python-green.svg)](Dockerfile)
 [![Database](https://img.shields.io/badge/database-postgres%20%2B%20pgvector-orange.svg)](compose.yml)
 [![MCP](https://img.shields.io/badge/mcp-channel%20analytics-7a3cff.svg)](server/src/index.ts)
 
 Автономный MCP-сервис для сбора постов из Telegram-каналов, нормализации метаданных,
-тегирования через Ollama и семантического поиска.
+тегирования и семантического поиска с dual-backend (`llm-mcp` default, Ollama fallback).
 
 [![Quick Start](https://img.shields.io/badge/Quick%20Start-Open-1f6feb?style=for-the-badge)](#-быстрый-старт)
 [![Architecture](https://img.shields.io/badge/Architecture-Open-1f6feb?style=for-the-badge)](#-архитектура)
@@ -22,7 +22,7 @@
 ### 🧠 LLM-ready слой
 - Теги на русском с канонизацией и алиасами (`TAG_ALIASES_JSON`).
 - `emoji_line` и `code_json` для компактной структуризации сигнала.
-- Векторный поиск по сообщениям на базе `pgvector` + Ollama embeddings.
+- Векторный поиск по сообщениям на базе `pgvector` + backend strategy (`llm_mcp|ollama`).
 
 ### 🤖 Интеграция с Telegram
 - Progress-уведомления в Telegram во время циклов worker.
@@ -83,6 +83,10 @@ curl -fsS http://127.0.0.1:3334/tools
 - `OLLAMA_TAG_MODEL`, `OLLAMA_EMBED_MODEL` — модели тегов/эмбеддингов.
 - `MCP_HTTP_TOKEN` — токен защиты HTTP инструментов.
 - `TELEGRAM_USE_MCP`, `TELEGRAM_MCP_BASE_URL`, `TELEGRAM_MCP_BOT_ID`, `TELEGRAM_MCP_CHAT_ID`.
+- `LLM_BACKEND=llm_mcp|ollama`, `LLM_MCP_BASE_URL`, `LLM_MCP_PROVIDER`, `LLM_BACKEND_FALLBACK_OLLAMA`.
+
+Если `TELEGRAM_MCP_BASE_URL` не задан, default route: `http://tgapi:8000`.
+На 1 релиз включён legacy retry на `http://telegram-api:8000` с warning в логах.
 
 ## 📁 Структура
 

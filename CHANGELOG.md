@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026.02.8] - 2026-02-07
+
+- Введён dual-backend контракт для LLM в `worker` и `server`:
+  - `LLM_BACKEND=llm_mcp|ollama` (default `llm_mcp`);
+  - `LLM_MCP_BASE_URL`, `LLM_MCP_PROVIDER`, `LLM_BACKEND_FALLBACK_OLLAMA`, `LLM_BACKEND_TIMEOUT_SEC`.
+- Тегирование и embeddings в `worker` теперь идут через backend abstraction:
+  - primary через `llm-mcp` (`/v1/llm/request` + polling jobs);
+  - fallback на Ollama при ошибке и `LLM_BACKEND_FALLBACK_OLLAMA=1`.
+- `messages.search` в MCP server переведён на ту же backend strategy (вместо hardcoded Ollama).
+- Нормализован Telegram MCP host default:
+  - default `http://tgapi:8000`;
+  - на 1 релиз включён legacy retry к `http://telegram-api:8000` с warning.
+- Обновлены `README.md`, `.env.example`, `compose.yml` под новые контракты.
+- Добавлены governance-файлы публичного репозитория:
+  - `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`;
+  - `.github/ISSUE_TEMPLATE/*`, `.github/pull_request_template.md`, `.github/CODEOWNERS`.
+- Добавлен pragmatic CI: `.github/workflows/ci.yml` (compose config, markdown links, Python compile, TS build).
+
+
 ## [2026.02.7] - 2026-02-07
 
 - `README.md` переведён в единый визуальный стандарт NeuronSwarm:
