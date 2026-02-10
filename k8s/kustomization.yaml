@@ -20,6 +20,8 @@ labels:
   - pairs:
       app.kubernetes.io/part-of: neuronswarm
       app.kubernetes.io/managed-by: kustomize
+      project: neuronswarm
+      module: channel
 
 # Замены названий образов (опционально)
 # Можно использовать для переопределения в разных окружениях
