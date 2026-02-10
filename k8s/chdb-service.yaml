@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chdb-service
+  namespace: ns-channel
+  labels:
+    app: chdb
+    app.kubernetes.io/part-of: neuronswarm
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: chdb
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+---
+# NodePort сервис для доступа извне кластера (если требуется)
+apiVersion: v1
+kind: Service
+metadata:
+  name: chdb-nodeport
+  namespace: ns-channel
+  labels:
+    app: chdb
+    app.kubernetes.io/part-of: neuronswarm
+spec:
+  type: NodePort
+  selector:
+    app: chdb
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    nodePort: 30434
+    protocol: TCP

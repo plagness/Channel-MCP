@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chmcp
+  namespace: ns-channel
+  labels:
+    app: chmcp
+    app.kubernetes.io/part-of: neuronswarm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chmcp
+  template:
+    metadata:
+      labels:
+        app: chmcp
+        app.kubernetes.io/part-of: neuronswarm
+    spec:
+      # Ожидание готовности базы данных перед запуском приложения
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.35
+        command:
+          - sh
+          - -c
+          - |
+            until nc -z chdb-service.ns-channel.svc.cluster.local 5432; do
+              echo "Waiting for PostgreSQL..."
+              sleep 2
+            done
+            echo "PostgreSQL is ready"
+      containers:
+      - name: chmcp
+        # Локальный образ без pull-версии
+        image: channel-mcp-chmcp:latest
+        imagePullPolicy: Never
+        ports:
+        - name: http
+          containerPort: 3333
+          protocol: TCP
+        env:
+        # Хост базы данных
+        - name: CHANNEL_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: channel-config
+              key: DB_HOST
+        # Пользователь базы данных
+        - name: CHANNEL_DB_USER
+          value: "channel"
+        # Пароль базы данных
+        - name: CHANNEL_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: channel-secrets
+              key: CHANNEL_DB_PASSWORD
+        # Название базы данных
+        - name: CHANNEL_DB_NAME
+          value: "channel_mcp"
+        # Порт базы данных
+        - name: CHANNEL_DB_PORT
+          value: "5432"
+        # URL LLM Core сервиса
+        - name: LLM_MCP_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: channel-config
+              key: LLM_CORE_URL
+        # Флаг использования Telegram MCP
+        - name: TELEGRAM_USE_MCP
+          valueFrom:
+            configMapKeyRef:
+              name: channel-config
+              key: TELEGRAM_USE_MCP
+        # URL Telegram API сервиса
+        - name: TELEGRAM_MCP_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: channel-config
+              key: TGAPI_URL
+        # Токен HTTP для MCP
+        - name: MCP_HTTP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: channel-secrets
+              key: MCP_HTTP_TOKEN
+        # Уровень логирования
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: channel-config
+              key: LOG_LEVEL
+        # Проверка живости контейнера
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3333
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        # Проверка готовности контейнера
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3333
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      # Стратегия перезапуска при сбое
+      restartPolicy: Always

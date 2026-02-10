@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: channel-config
+  namespace: ns-channel
+data:
+  # Конфигурация подключения к базе данных
+  DB_HOST: chdb
+  # URL LLM Core сервиса в кластере (ns-llm namespace)
+  LLM_CORE_URL: "http://llmcore.ns-llm.svc.cluster.local:8080"
+  # URL Telegram API сервиса в кластере (ns-telegram namespace)
+  TGAPI_URL: "http://tgapi.ns-telegram.svc.cluster.local:8000"
+  # Использование Telegram MCP (отключено - используется прямое подключение)
+  TELEGRAM_USE_MCP: "0"
+  # Уровень логирования
+  LOG_LEVEL: "info"
