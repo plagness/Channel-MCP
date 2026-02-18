@@ -1,0 +1,131 @@
+# Integrat — определение плагина channel-mcp
+# Аналитика Telegram-каналов: сообщения, теги, семантический поиск
+
+plugin:
+  slug: channel-mcp
+  name: Channel Analytics
+  description: Аналитика Telegram-каналов — сообщения, теги, семантический поиск
+  version: 2026.02.9
+  homepage: https://github.com/plagness/Channel-MCP
+
+provider:
+  base_url: ${CHANNEL_MCP_URL}
+  health_path: /health
+  auth:
+    type: bearer
+    env: MCP_HTTP_TOKEN
+
+endpoints:
+  - slug: channels.list
+    name: Список каналов
+    description: Список отслеживаемых каналов с метаданными
+    path: /tools/channels.list
+    method: POST
+    access: open
+    cache_ttl: 300
+    data_type: basic
+
+  - slug: messages.fetch
+    name: Сообщения
+    description: Получение сообщений с фильтрацией по каналу, дате, тегам
+    path: /tools/messages.fetch
+    method: POST
+    access: open
+    cache_ttl: 120
+    data_type: medium
+    params_schema:
+      type: object
+      properties:
+        channel:
+          type: string
+          description: Юзернейм канала
+        date_from:
+          type: string
+          description: Начало периода (ISO date)
+        date_to:
+          type: string
+          description: Конец периода (ISO date)
+        tag:
+          type: string
+          description: Фильтр по тегу
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 100
+        offset:
+          type: integer
+          default: 0
+
+  - slug: tags.top
+    name: Топ тегов
+    description: Популярные теги за период
+    path: /tools/tags.top
+    method: POST
+    access: open
+    cache_ttl: 600
+    data_type: basic
+    params_schema:
+      type: object
+      properties:
+        channel:
+          type: string
+        date_from:
+          type: string
+        date_to:
+          type: string
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 20
+
+  - slug: messages.search
+    name: Семантический поиск
+    description: Поиск сообщений по смыслу (pgvector + эмбеддинги)
+    path: /tools/messages.search
+    method: POST
+    access: gated
+    cache_ttl: 60
+    data_type: complex
+    params_schema:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Поисковый запрос на естественном языке
+        channel:
+          type: string
+        date_from:
+          type: string
+        date_to:
+          type: string
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        min_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Минимальный порог сходства
+
+config_fields:
+  - slug: channels_json
+    label: Каналы для мониторинга
+    type: string
+    required: true
+    placeholder: '[{"username":"durov","title":"Durov","category":"tech"}]'
+    help: >
+      JSON-массив каналов. Каждый объект: username (обязательно),
+      title, category, is_private (boolean).
+
+  - slug: backfill_days
+    label: Глубина загрузки (дней)
+    type: number
+    required: false
+    default: 7
+    help: Сколько дней истории загрузить при первом подключении (0 = только новые)
