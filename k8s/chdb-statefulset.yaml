@@ -81,7 +81,7 @@ spec:
       volumes:
       - name: init-scripts
         hostPath:
-          path: /home/plag/NeuronSwarm/channel-mcp/db/init
+          path: /home/plag/NeuronSwarm/Channel-MCP/db/init
           type: Directory
   # Запрос постоянного хранилища
   volumeClaimTemplates:
