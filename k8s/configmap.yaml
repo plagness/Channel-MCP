@@ -12,5 +12,7 @@ data:
   TGAPI_URL: "http://tgapi.ns-telegram.svc.cluster.local:8000"
   # Использование Telegram MCP (отключено - используется прямое подключение)
   TELEGRAM_USE_MCP: "0"
+  # Отслеживаемые публичные каналы (через запятую, без @)
+  CHANNEL_USERNAMES: "prostoecon,antidigital,bcs_express,centralbank_russia"
   # Уровень логирования
   LOG_LEVEL: "info"

@@ -118,7 +118,7 @@ app.post("/tools/:name", authMiddleware, async (req: Request, res: Response) => 
 
 addTool({
   name: "channels.list",
-  description: "List known channels",
+  description: "Список отслеживаемых публичных каналов (Channel-MCP)",
   parameters: z.object({}).optional(),
   execute: async () => {
     const { rows } = await pool.query(
@@ -131,8 +131,8 @@ addTool({
 });
 
 addTool({
-  name: "messages.fetch",
-  description: "Fetch messages by date/channel/tag",
+  name: "channel.messages.fetch",
+  description: "Получить посты из публичных каналов по дате/каналу/тегу (Channel-MCP)",
   parameters: z.object({
     channel: z.string().optional(),
     date_from: z.string().optional(),
@@ -198,7 +198,7 @@ addTool({
 
 addTool({
   name: "tags.top",
-  description: "Top tags for a date range",
+  description: "Топ тегов по постам каналов за период (Channel-MCP)",
   parameters: z.object({
     channel: z.string().optional(),
     date_from: z.string().optional(),
@@ -242,8 +242,8 @@ addTool({
 });
 
 addTool({
-  name: "messages.search",
-  description: "Semantic search over messages (pgvector + LLM backend embeddings)",
+  name: "channel.messages.search",
+  description: "Семантический поиск по постам каналов (pgvector + LLM embeddings, Channel-MCP)",
   parameters: z.object({
     query: z.string(),
     channel: z.string().optional(),

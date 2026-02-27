@@ -6,6 +6,8 @@ metadata:
   labels:
     app: chmcp
     app.kubernetes.io/part-of: neuronswarm
+    ns.component: mcp
+    ns.module: channel
 spec:
   type: ClusterIP
   selector:
